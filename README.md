@@ -1,8 +1,7 @@
 # quickjs-yue
 
-Experimental Lua bindings for Yue, running on QuickJS Native through
-[quickjs-lua](https://github.com/michael79be/quickjs-lua). The first example
-creates a native window using `yue.gui`.
+Yue bindings for Lua running on QuickJS Native through
+[quickjs-lua](https://github.com/michael79be/quickjs-lua).
 
 ## Installation
 
@@ -16,17 +15,7 @@ compiled for Lua 5.4, matching the runtime provided by `quickjs-lua`. Windows
 archives also include `WebView2Loader.dll`.
 
 All operating systems and architectures supported by QuickJS Native are
-supported: macOS arm64/x64, Linux x86/x64, and Windows x86/x64. To download
-every variant for cross-platform bundling, run:
-
-```sh
-npm run download:native -- --all
-```
-
-The QuickJS Native target names are also accepted, for example
-`node postbuild.mjs linux-32`, `node postbuild.mjs windows-32`,
-`node postbuild.mjs macos-intel`, or `node postbuild.mjs macos-universal`.
-The modules are stored separately by operating system and architecture.
+supported: macOS arm64/x64, Linux x86/x64, and Windows x86/x64.
 
 ## Create a window
 
@@ -60,15 +49,3 @@ const win = new Window(runtime);
 win.center();
 MessageLoop.run(runtime);
 ```
-
-The downloaded native module is installed under a platform-specific directory:
-`release/macos/arm64/yue/gui.so`, `release/linux/x64/yue/gui.so`, or
-`release/windows/x64/yue/gui.dll`.
-
-By default, module lookup checks the current platform's `release/` directory
-near the current directory and executable, as well as
-`node_modules/quickjs-yue/release/`.
-
-Lua support in Yue is experimental. See the
-[Yue Lua guide](https://github.com/yue/yue/blob/v0.15.6/docs/guides/lua/getting_started.md)
-for the available APIs.
