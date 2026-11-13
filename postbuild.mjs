@@ -17,24 +17,6 @@ const targets = {
     'windows-x64': { asset: 'win_x64', platform: 'windows', architecture: 'x64' }
 };
 
-const targetAliases = {
-    linux: ['linux-x64'],
-    'linux-32': ['linux-x86'],
-    macos: ['macos-arm64'],
-    'macos-intel': ['macos-x64'],
-    'macos-universal': ['macos-arm64', 'macos-x64'],
-    windows: ['windows-x64'],
-    'windows-32': ['windows-x86'],
-    'win-32': ['windows-x86'],
-    'win-64': ['windows-x64']
-};
-
-const hostTargets = {
-    darwin: { arm64: 'macos-arm64', x64: 'macos-x64' },
-    linux: { ia32: 'linux-x86', x64: 'linux-x64' },
-    win32: { ia32: 'windows-x86', x64: 'windows-x64' }
-};
-
 async function download(url) {
     const response = await fetch(url);
     if (!response.ok) {
@@ -78,27 +60,6 @@ async function installYueLibrary(target) {
     }
 }
 
-function resolveTargets(argument) {
-    if (argument === '--all') {
-        return Object.values(targets);
-    }
-
-    if (argument) {
-        const targetNames = targetAliases[argument] ?? [argument];
-        const selectedTargets = targetNames.map((name) => targets[name]);
-        if (selectedTargets.some((target) => !target)) {
-            throw new Error(`Unknown Yue target "${argument}". Supported targets: ${Object.keys(targets).join(', ')}.`);
-        }
-        return selectedTargets;
-    }
-
-    const targetName = hostTargets[process.platform]?.[process.arch];
-    if (!targetName) {
-        throw new Error(`Yue Lua binaries are not available for ${process.platform} ${process.arch}.`);
-    }
-    return [targets[targetName]];
-}
-
 function installLuaLibraries() {
     const luaReleaseDirectory = path.join(projectRoot, 'node_modules', 'quickjs-lua', 'release');
     mkdirSync(releaseDirectory, { recursive: true });
@@ -120,7 +81,7 @@ function installMacOSAppLibraries() {
 
 installLuaLibraries();
 
-for (const target of resolveTargets(process.argv[2])) {
+for (const target of Object.values(targets)) {
     await installYueLibrary(target);
 }
 

@@ -10,7 +10,7 @@ npm install
 ```
 
 During installation and build, the project downloads the prebuilt Yue 0.15.6
-archive for the current operating system and architecture. The native module is
+archives for every supported operating system and architecture. The native module is
 compiled for Lua 5.4, matching the runtime provided by `quickjs-lua`. Windows
 archives also include `WebView2Loader.dll`.
 

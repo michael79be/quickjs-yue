@@ -22,7 +22,6 @@
         "build": "rollup --config rollup.config.ts --configPlugin typescript",
         "postbuild": "tsc --project tsconfig.json --declaration --emitDeclarationOnly --declarationDir dist/types && node postbuild.mjs",
         "postinstall": "node postbuild.mjs",
-        "download:native": "node postbuild.mjs",
         "prepack": "npm run build"
     },
     "engines": {
