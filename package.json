@@ -1,0 +1,44 @@
+{
+    "name": "quickjs-yue",
+    "version": "0.1.0",
+    "description": "Lua bindings for Yue, running on QuickJS Native",
+    "type": "module",
+    "main": "./dist/index.js",
+    "types": "./dist/types/index.d.ts",
+    "exports": {
+        ".": {
+            "types": "./dist/types/index.d.ts",
+            "import": "./dist/index.js"
+        }
+    },
+    "files": [
+        "dist/index.js",
+        "dist/types",
+        "postbuild.mjs",
+        "release"
+    ],
+    "scripts": {
+        "prebuild": "node -e \"require('node:fs').rmSync('dist', { recursive: true, force: true })\"",
+        "build": "rollup --config rollup.config.ts --configPlugin typescript",
+        "postbuild": "tsc --project tsconfig.json --declaration --emitDeclarationOnly --declarationDir dist/types && node postbuild.mjs",
+        "postinstall": "node postbuild.mjs",
+        "download:native": "node postbuild.mjs",
+        "prepack": "npm run build"
+    },
+    "engines": {
+        "node": ">=18"
+    },
+    "dependencies": {
+        "quickjs-lua": "github:michael79be/quickjs-lua#main",
+        "unzipper": "^0.12.5"
+    },
+    "devDependencies": {
+        "@rollup/plugin-commonjs": "^29.0.3",
+        "@rollup/plugin-node-resolve": "^16.0.3",
+        "@rollup/plugin-typescript": "^12.3.1",
+        "quickjs-native": "github:michael79be/quickjs-native#main",
+        "rollup": "^4.68.0",
+        "tslib": "^2.8.1",
+        "typescript": "^6.0.3"
+    }
+}
