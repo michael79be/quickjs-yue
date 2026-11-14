@@ -2,7 +2,7 @@ import * as os from 'os';
 import {
     App, AttributedText, Button, Canvas, Clipboard, ComboBox, Container, Cursor,
     DatePicker, Entry, FileOpenDialog, FileSaveDialog, Font, Group, Image, Label,
-    Menu, MenuBar, MenuItem, MessageBox, MessageLoop, Notification, NotificationCenter, Picker,
+    Menu, MenuBar, MenuItem, MessageBox, MessageLoop, Picker,
     ProgressBar, Scroll, Separator, Slider, Tab, Tray, Window, Yue,
 } from '../index';
 import type { View } from '../index';
@@ -212,25 +212,6 @@ class KitchenSink {
             this.status.setText('Clipboard text read');
         });
         this.button(page, 'Toggle tray item', () => this.toggleTray());
-        this.button(page, 'Send notification', () => {
-            if (os.platform === 'darwin') {
-                this.status.setText('macOS notifications require a bundled application');
-                return;
-            }
-            const notification = this.own(new Notification(this.yue));
-            notification.setTitle('Yue Kitchen Sink');
-            notification.setBody('This is a native notification.');
-            notification.show();
-            this.status.setText('Notification requested');
-        });
-        this.button(page, 'Clear this app’s notifications', () => {
-            if (os.platform === 'darwin') {
-                this.status.setText('macOS notifications require a bundled application');
-                return;
-            }
-            NotificationCenter.clear(this.yue);
-            this.status.setText('Application notifications cleared');
-        });
 
         const clock = this.own(new Label('', this.yue));
         clock.view.setStyle({ height: 28 });

@@ -204,10 +204,8 @@ for percentages.
 Build the interactive kitchen-sink example with
 `npx rollup --config rollup.config.ts --configPlugin typescript --input src/samples/kitchen-sink.ts --dir dist`,
 then run `dist/kitchen-sink.js` with QuickJS Native. Its tabs demonstrate
-controls, dialogs, graphics, menus, clipboard, tray and notifications.
-Canvas drawing is offscreen. The notification buttons report a limitation on
-macOS, where notifications require a bundled app;
-on Windows and Linux, choose an image before creating a tray item.
+controls, dialogs, graphics, menus, clipboard and tray. Canvas drawing is
+offscreen. On Windows and Linux, choose an image before creating a tray item.
 
 On macOS, create an app and copy its native dependencies after bundling:
 
