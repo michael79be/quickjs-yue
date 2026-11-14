@@ -4,6 +4,7 @@ import commonjs from '@rollup/plugin-commonjs';
 
 export default {
     input: 'src/index.ts',
+    external: ['std'],
     output: {
         dir: 'dist',
         format: 'esm',
