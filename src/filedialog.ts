@@ -117,11 +117,12 @@ export class FileDialog {
         `);
     }
 
-    call(statement: string): string | number | boolean | null {
-        return this.yue.eval(`
+    call(statement: string, modal = false): string | number | boolean | null {
+        const code = `
             local dialog = assert(_G.__quickjs_yue.file_dialogs[${this.handle}], 'File dialog is no longer available')
             ${statement}
-        `);
+        `;
+        return modal ? this.yue.evalModal(code) : this.yue.eval(code);
     }
 
     private execute(expression: string): boolean {
@@ -132,7 +133,7 @@ export class FileDialog {
             assert(type(accepted) == 'boolean', 'Invalid file dialog response')
             runtime.file_dialog_accepted[${this.handle}] = accepted
             return accepted
-        `);
+        `, true);
         if (typeof accepted !== 'boolean') throw new Error('[Yue] Invalid file dialog response.');
         return accepted;
     }

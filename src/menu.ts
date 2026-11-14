@@ -101,11 +101,12 @@ export class MenuBase {
         return `_G.__quickjs_yue.menus[${this.handle}]`;
     }
 
-    call(statement: string): string | number | boolean | null {
-        return this.yue.eval(`
+    call(statement: string, modal = false): string | number | boolean | null {
+        const code = `
             local menu = assert(${this.expression()}, 'Menu is no longer available')
             ${statement}
-        `);
+        `;
+        return modal ? this.yue.evalModal(code) : this.yue.eval(code);
     }
 
     private static index(index: number): void {
@@ -382,7 +383,7 @@ export class Menu {
     }
 
     popup(): void {
-        this.menuBase.call('menu:popup()');
+        this.menuBase.call('menu:popup()', true);
     }
 
     popupAt(point: Point): void {
@@ -390,7 +391,7 @@ export class Menu {
             !Number.isFinite(Math.fround(point.x)) || !Number.isFinite(Math.fround(point.y))) {
             throw new RangeError('Menu position must contain finite coordinates.');
         }
-        this.menuBase.call(`menu:popupat({ x = ${point.x}, y = ${point.y} })`);
+        this.menuBase.call(`menu:popupat({ x = ${point.x}, y = ${point.y} })`, true);
     }
 
     dispose(): void {

@@ -67,22 +67,35 @@ function installLuaLibraries() {
 }
 
 // Bundled macOS apps look for their libraries under Contents/MacOS.
-function installMacOSAppLibraries() {
+function installMacOSAppLibraries(appPath) {
     const luaLibrary = path.join(releaseDirectory, 'liblua.5.4.dylib');
     const yueDirectory = path.join(releaseDirectory, 'macos');
-    for (const entry of readdirSync(releaseDirectory, { withFileTypes: true })) {
-        const macOSDirectory = path.join(releaseDirectory, entry.name, 'Contents', 'MacOS');
-        if (entry.isDirectory() && entry.name.endsWith('.app') && existsSync(macOSDirectory)) {
-            copyFileSync(luaLibrary, path.join(macOSDirectory, 'liblua.5.4.dylib'));
-            cpSync(yueDirectory, path.join(macOSDirectory, 'macos'), { recursive: true });
+    const apps = appPath === undefined
+        ? readdirSync(releaseDirectory, { withFileTypes: true })
+            .filter((entry) => entry.isDirectory() && entry.name.endsWith('.app'))
+            .map((entry) => path.join(releaseDirectory, entry.name))
+        : [path.resolve(appPath)];
+    for (const app of apps) {
+        const macOSDirectory = path.join(app, 'Contents', 'MacOS');
+        if (!app.endsWith('.app') || !existsSync(macOSDirectory)) {
+            if (appPath === undefined) continue;
+            throw new Error(`Not a macOS application bundle: ${app}`);
         }
+        copyFileSync(luaLibrary, path.join(macOSDirectory, 'liblua.5.4.dylib'));
+        cpSync(yueDirectory, path.join(macOSDirectory, 'macos'), { recursive: true });
     }
 }
 
-installLuaLibraries();
-
-for (const target of Object.values(targets)) {
-    await installYueLibrary(target);
+if (process.argv[2] === '--app-libraries') {
+    if (process.argv.length !== 4) {
+        throw new Error('Usage: node postbuild.mjs --app-libraries <path-to-app>');
+    }
+    installMacOSAppLibraries(process.argv[3]);
+} else {
+    if (process.argv.length !== 2) throw new Error(`Unknown option: ${process.argv[2]}`);
+    installLuaLibraries();
+    for (const target of Object.values(targets)) {
+        await installYueLibrary(target);
+    }
+    installMacOSAppLibraries();
 }
-
-installMacOSAppLibraries();

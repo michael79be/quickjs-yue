@@ -1,6 +1,6 @@
 /// <reference types="quickjs-native" />
 
-import { Lua } from 'quickjs-lua';
+import { findLuaLibraries, Lua } from 'quickjs-lua';
 import * as os from 'os';
 import { EventBridge } from './eventbridge';
 
@@ -19,11 +19,15 @@ export class Yue {
     private eventBridge: EventBridge | undefined;
 
     constructor(options: YueOptions = {}) {
-        this.lua = new Lua();
+        const executablePath = os.platform === 'darwin' ? Yue.macExecutablePath() : undefined;
+        const executableDirectory = executablePath?.slice(0, executablePath.lastIndexOf('/'));
+        this.lua = new Lua(executableDirectory === undefined
+            ? undefined
+            : `${executableDirectory}/liblua.5.4.dylib;${findLuaLibraries()}`);
         if (options.yueModulePaths !== undefined) {
             this.lua.eval(`package.cpath = ${Yue.toLuaStringLiteral(options.yueModulePaths)} .. ';' .. package.cpath`);
         } else {
-            this.lua.eval(Yue.createYueModuleLoader(Yue.findYueModuleFiles()));
+            this.lua.eval(Yue.createYueModuleLoader(Yue.findYueModuleFiles(executablePath)));
         }
     }
 
@@ -68,6 +72,20 @@ export class Yue {
         return this.lua.eval(code);
     }
 
+    /** Runs a blocking native modal operation without interrupting its nested event loop. */
+    evalModal(code: string): string | number | boolean | null {
+        return this.lua.eval(`
+            local runtime = assert(_G.__quickjs_yue, 'GUI runtime is not initialized')
+            runtime.event_modal_depth = runtime.event_modal_depth + 1
+            local ok, result = pcall(function()
+                ${code}
+            end)
+            runtime.event_modal_depth = runtime.event_modal_depth - 1
+            if not ok then error(result, 0) end
+            return result
+        `);
+    }
+
     runFile(filename: string): string | number | boolean | null {
         return this.lua.eval(`dofile(${Yue.toLuaStringLiteral(filename)})`);
     }
@@ -99,6 +117,7 @@ export class Yue {
             if not _G.__quickjs_yue then
                 _G.__quickjs_yue = {
                     gui = require('yue.gui'),
+                    event_modal_depth = 0,
                     windows = {},
                     next_window_handle = 0,
                     buttons = {},
@@ -178,7 +197,33 @@ export class Yue {
         this.lua.destroy();
     }
 
-    private static findYueModuleFiles(): string[] {
+    private static macExecutablePath(): string {
+        const library = native.dlopen('/usr/lib/libSystem.B.dylib');
+        if (library === null) throw new Error('[Yue] Cannot load the macOS system library.');
+        try {
+            const getPath = native.dlsym(library, '_NSGetExecutablePath');
+            if (getPath === null) throw new Error('[Yue] Cannot locate _NSGetExecutablePath.');
+            const size = new Uint32Array(1);
+            native.invoke(getPath, [new ArrayBuffer(1), size.buffer]);
+            if (size[0] === 0) throw new Error('[Yue] Cannot determine the executable path size.');
+            const bytes = new Uint8Array(size[0]);
+            if (native.invoke(getPath, [bytes.buffer, size.buffer]) !== 0) {
+                throw new Error('[Yue] Cannot determine the executable path.');
+            }
+            let encoded = '';
+            for (const byte of bytes) {
+                if (byte === 0) break;
+                encoded += `%${byte.toString(16).padStart(2, '0')}`;
+            }
+            const [path, error] = os.realpath(decodeURIComponent(encoded));
+            if (error !== 0) throw new Error(`[Yue] Cannot resolve the executable path (error ${error}).`);
+            return path;
+        } finally {
+            native.dlclose(library);
+        }
+    }
+
+    private static findYueModuleFiles(executablePath?: string): string[] {
         const platformDirectory = Yue.getPlatformDirectory();
         const extension = platformDirectory === 'windows' ? 'dll' : 'so';
         const architectures = Yue.getPlatformArchitectures(platformDirectory);
@@ -200,6 +245,7 @@ export class Yue {
             }
         };
 
+        if (executablePath) addAncestors(executablePath, true);
         addAncestors(workingDirectory, false);
         if (typeof scriptArgs[0] === 'string' && scriptArgs[0] !== '') {
             const [executablePath, pathError] = os.realpath(scriptArgs[0]);

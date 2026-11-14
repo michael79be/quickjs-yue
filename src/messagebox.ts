@@ -97,7 +97,7 @@ export class MessageBox {
 
     private execute(runStatement: string): number {
         this.yue.ensureGuiRuntime();
-        const response = this.yue.eval(this.createScript(runStatement));
+        const response = this.yue.evalModal(this.createScript(runStatement));
         if (typeof response !== 'number') {
             throw new Error('[Yue] The message box did not return a response.');
         }

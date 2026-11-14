@@ -54,6 +54,8 @@ events.
 
 `MessageLoop.setTimer(milliseconds, callback)` runs a repeating callback while
 the message loop is active. Call the returned function to cancel the timer.
+While a blocking dialog or popup menu is open, JavaScript event and timer
+callbacks are deferred until it closes.
 
 `View` is a base class and cannot be created directly by Yue. Wrap a window's
 content view with `View.fromWindow(win)`; it also exposes a `responder`.
@@ -198,6 +200,27 @@ operations, percentages, sign changes and repeated equals. Press Enter to
 calculate, just like the equals button. On macOS, the Belgian AZERTY keyboard
 also supports Shift+= for addition, Shift+$ for multiplication and Shift+ù
 for percentages.
+
+Build the interactive kitchen-sink example with
+`npx rollup --config rollup.config.ts --configPlugin typescript --input src/samples/kitchen-sink.ts --dir dist`,
+then run `dist/kitchen-sink.js` with QuickJS Native. Its tabs demonstrate
+controls, dialogs, graphics, menus, clipboard, tray and notifications.
+Canvas drawing is offscreen. The notification buttons report a limitation on
+macOS, where notifications require a bundled app;
+on Windows and Linux, choose an image before creating a tray item.
+
+On macOS, create an app and copy its native dependencies after bundling:
+
+```sh
+npx quickjs-native bundle dist/kitchen-sink.js --platform macos --app
+node postbuild.mjs --app-libraries release/kitchen-sink.app
+```
+
+Use `--platform macos-intel` on Intel. The Lua dylib installed by `quickjs-lua`
+must contain the target architecture; a universal app needs a universal dylib.
+For an installed package, use `node node_modules/quickjs-yue/postbuild.mjs`
+instead. The `--app-libraries` option copies existing libraries without
+downloading them.
 
 Pass `{ frame: false, transparent: true }` as the second argument to `Window`
 to create a transparent frameless window. Transparent framed windows are not

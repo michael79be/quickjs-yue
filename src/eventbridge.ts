@@ -144,6 +144,7 @@ export class EventBridge {
                 local version = runtime.event_timer_version
                 runtime.gui.MessageLoop.settimer(10, function()
                     if runtime.event_timer_version ~= version then return false end
+                    if runtime.event_modal_depth > 0 then return true end
                     if runtime.event_timer_stopping then
                         runtime.event_timer_stopped = true
                         runtime.gui.MessageLoop.quit()
