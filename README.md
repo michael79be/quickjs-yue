@@ -191,6 +191,14 @@ then run `dist/clock.js` with QuickJS Native. On macOS, it has a transparent
 titlebar, native window buttons and a custom border; drag its background or
 time display to move it. Other platforms use a normal window titled "Clock".
 
+Build the basic calculator with
+`npx rollup --config rollup.config.ts --configPlugin typescript --input src/samples/calculator.ts --dir dist`,
+then run `dist/calculator.js` with QuickJS Native. It supports the four basic
+operations, percentages, sign changes and repeated equals. Press Enter to
+calculate, just like the equals button. On macOS, the Belgian AZERTY keyboard
+also supports Shift+= for addition, Shift+$ for multiplication and Shift+ù
+for percentages.
+
 Pass `{ frame: false, transparent: true }` as the second argument to `Window`
 to create a transparent frameless window. Transparent framed windows are not
 supported by Yue. Add `showTrafficLights: true` to display the native window

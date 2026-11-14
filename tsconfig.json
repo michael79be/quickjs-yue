@@ -13,6 +13,7 @@
     "sourceMap": false
   },
   "include": [
-    "src/index.ts"
+    "src/index.ts",
+    "src/samples/*.ts"
   ]
 }
